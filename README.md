@@ -18,7 +18,7 @@ pushd data/spool && \
     popd
 ```
 
-Run the builder in the context of a PostGIS server, using 
+Run the builder in the context of a PostGIS server:
 
 ```bash
 sudo docker pull jamesbrink/postgresql

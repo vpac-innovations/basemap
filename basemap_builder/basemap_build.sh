@@ -18,15 +18,13 @@ function init_database() {
     export PGPASSWORD=${DB_ENV_PASSWORD}
     psql ${dbopts[*]} --command "SELECT PostGIS_full_version();" 2>/dev/null
     if [ $? -eq 0 ]; then
-        return 0
+       echo "PostGIS already imported."
+       return 0
     fi
 
     echo "Setting up PostGIS functions."
-    psql ${dbopts[*]} --file=/usr/share/postgresql/9.3/contrib/postgis-2.1/postgis.sql && \
-    psql ${dbopts[*]} --file=/usr/share/postgresql/9.3/contrib/postgis-2.1/spatial_ref_sys.sql && \
-    psql ${dbopts[*]} --file=/usr/share/postgresql/9.3/contrib/postgis-2.1/postgis_comments.sql && \
-    psql ${dbopts[*]} --command="GRANT SELECT ON spatial_ref_sys TO PUBLIC;" && \
-    psql ${dbopts[*]} --command="GRANT ALL ON geometry_columns TO ${DB_ENV_USER};"
+    psql ${dbopts[*]} \
+        --command="CREATE EXTENSION postgis; CREATE EXTENSION postgis_topology;"
     if [ $? -ne 0 ]; then
         echoerr "Failed to set up PostGIS."
         exit 1
