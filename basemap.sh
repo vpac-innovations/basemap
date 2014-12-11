@@ -1,10 +1,10 @@
 #!/bin/bash
 
-planetFiles=ls -1 ${SPOOL_DIR}/*.osm.pbf
+shopt -s nullglob
+echoerr() { cat <<< "$@" 1>&2; }
 
-if [ ! -r ${planetFile} ]; then
-  echo "Error: planet file ${planetFile} can not be read."
-  exit 1
+if [ ${NCPU} -eq 0 ]; then
+    export NCPU=$(nproc)
 fi
 
 # Get coastlines. These are separate from the osm database that would be
@@ -32,9 +32,26 @@ function get_coastlines() {
     popd
 }
 
-get_coastlines
+function import_osm() {
+    local nImports
+    nImports=0
+    for f in ${SPOOL_DIR}/*.osm.pbf; do
+        echo "Importing $f into database."
+        osm2pgsql --slim -C 1500 --number-processes ${NCPU} ${f}
+        if [ $? -ne 0 ]; then
+            echoerr "Failed to import data."
+            exit 1
+        fi
+        nImports=$(( $nImports + 1 ))
+    done
+    if [ $nImports -eq 0 ]; then
+        echoerr "No datasets to import. Is there a volume mounted at ${SPOOL_DIR}?"
+        exit 1
+    else
+        echo "Imported $nImports planet files."
+    fi
+}
 
-# First import the planet file.
-echo "Importing planet file."
-osm2pgsql -U gis -d gis --slim -C 1500 --number-processes 4 ${planetFile}
+import_osm
+get_coastlines
 
