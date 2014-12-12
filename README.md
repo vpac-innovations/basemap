@@ -27,6 +27,7 @@ Then run the builder in the context of a PostGIS server.
 sudo docker pull jamesbrink/postgresql
 sudo docker run -d --name postgis jamesbrink/postgresql
 sudo docker run --rm --link postgis:db \
+    -e NCPU=8 \
     -v $PWD/data/spool:/var/spool/basemap \
     -v $PWD/data/tiles:/var/lib/basemap \
     -t basemap_builder
