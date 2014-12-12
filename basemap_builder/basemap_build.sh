@@ -149,6 +149,32 @@ function import_osm() {
 
 function generate_style() {
     echo "Generating stylesheet."
+    pushd ${SPOOL_DIR} >/dev/null
+    if [ ! -d osm-bright ]; then
+        git clone https://github.com/mapbox/osm-bright.git
+    fi
+    cd osm-bright
+    cat > configure.py <<EOL
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from os import path, getcwd
+from collections import defaultdict
+config = defaultdict(defaultdict)
+config["importer"] = "osm2pgsql"
+config["name"] = "OSM Bright"
+config["path"] = path.expanduser("~/Documents/MapBox/project")
+config["postgis"]["host"]     = "db"
+config["postgis"]["port"]     = "${DB_PORT_5432_TCP_PORT}"
+config["postgis"]["dbname"]   = "${DB_ENV_SCHEMA}"
+config["postgis"]["user"]     = "${DB_ENV_USER}"
+config["postgis"]["password"] = "${DB_ENV_PASSWORD}"
+# Extents will be overridden when exporting anyway.
+config["postgis"]["extent"] = ""
+config["land-high"] = "${SPOOL_DIR}/coastlines/land-polygons-split-3857/land_polygons.shp"
+config["land-low"] = "${SPOOL_DIR}/coastlines/simplified-land-polygons-complete-3857/simplified_land_polygons.shp"
+EOL
+    popd >/dev/null
 }
 
 function generate_tiles() {
@@ -162,4 +188,5 @@ function serve_tiles() {
 init_database
 import_osm
 get_coastlines
+generate_style
 
