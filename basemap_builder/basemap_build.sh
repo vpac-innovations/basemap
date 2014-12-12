@@ -12,11 +12,44 @@ if [ x${DB_ENV_SCHEMA} == x ]; then
     exit 1
 fi
 
+function put_meta() {
+    local dbopts name value
+    dbopts=(-U ${DB_ENV_USER} -d ${DB_ENV_SCHEMA} -h db)
+    name=${1}
+    value=${2}
+    export PGPASSWORD=${DB_ENV_PASSWORD}
+
+    # Create table, but ignore error if it already exists.
+    psql ${dbopts[*]} --command="
+        CREATE TABLE basemap_meta (name text PRIMARY KEY, value text);" 2>&1 | \
+            grep -v "relation .* already exists"
+
+    # This is a dodgy upsert, but we don't care about security nor
+    # concurrency in this script.
+    # http://stackoverflow.com/a/6527838/320036
+    psql ${dbopts[*]} --command="
+        UPDATE basemap_meta SET value='${value}' WHERE name='${name}';
+        INSERT INTO basemap_meta (name, value)
+            SELECT '${name}', '${value}'
+            WHERE NOT EXISTS (
+                SELECT 1 FROM basemap_meta WHERE name='${name}');" 1>&2
+    return $?
+}
+
+function get_meta() {
+    local dbopts name value
+    dbopts=(-U ${DB_ENV_USER} -d ${DB_ENV_SCHEMA} -h db)
+    name=${1}
+    export PGPASSWORD=${DB_ENV_PASSWORD}
+    psql ${dbopts[*]} -t --command="SELECT value FROM basemap_meta WHERE name='${name}';" 2>/dev/null | head -n 1 | sed 's, ,,'
+    return $?
+}
+
 function init_database() {
     local dbopts
     dbopts=(-U ${DB_ENV_USER} -d ${DB_ENV_SCHEMA} -h db)
     export PGPASSWORD=${DB_ENV_PASSWORD}
-    psql ${dbopts[*]} --command "SELECT PostGIS_full_version();" 2>/dev/null
+    psql ${dbopts[*]} --command="SELECT PostGIS_full_version();" 2>&1 > /dev/null
     if [ $? -eq 0 ]; then
        echo "PostGIS already imported."
        return 0
@@ -61,8 +94,8 @@ function import_osm() {
 
     # Generate a checksum to detect whether the files have changed since the
     # last import.
-    checksum=$(find ${SPOOL_DIR} -maxdepth 1 -type f -exec sha1sum {} \; | sort -k 42 | sha1sum)
-    old_checksum=$(cat ${SPOOL_DIR}/osm_checksum.txt 2>/dev/null)
+    checksum=$(find ${SPOOL_DIR} -maxdepth 1 -type f -exec sha1sum {} \; | sort -k 42 | sha1sum | sed 's,\s\+-$,,')
+    old_checksum=$(get_meta checksum)
     if [ "x${old_checksum}" = "x${checksum}" ]; then
         echo "OSM planet files have already been imported."
         return 0
@@ -91,7 +124,7 @@ function import_osm() {
         echo "Imported $nImports planet files."
     fi
 
-    echo -n "${checksum}" > ${SPOOL_DIR}/osm_checksum.txt
+    put_meta checksum ${checksum}
 }
 
 function generate_style() {
