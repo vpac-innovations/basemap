@@ -37,40 +37,51 @@ function init_database() {
 function get_coastlines() {
     mkdir -p ${SPOOL_DIR}/coastlines
     pushd ${SPOOL_DIR}/coastlines
-    if [ ! -d "simplified-land-polygons-complete-3857" ]; then
+
+    if [ ! -f "simplified-land-polygons-complete-3857.zip" ]; then
         echo "Getting simplified global coastlines."
         wget http://data.openstreetmapdata.com/simplified-land-polygons-complete-3857.zip
-        unzip simplified-land-polygons-complete-3857.zip
-        shapeindex simplified-land-polygons-complete-3857/simplified_land_polygons.shp
-    else
-        echo "Reusing existing simplified global coastlines."
     fi
-    if [ ! -d "land-polygons-split-3857" ]; then
+    unzip simplified-land-polygons-complete-3857.zip
+    shapeindex simplified-land-polygons-complete-3857/simplified_land_polygons.shp
+
+    if [ ! -f "land-polygons-split-38577.zip" ]; then
         echo "Getting detailed global coastlines."
         wget http://data.openstreetmapdata.com/land-polygons-split-3857.zip
-        unzip land-polygons-split-3857.zip
-        shapeindex land-polygons-split-3857/land_polygons.shp
-    else
-        echo "Reusing existing detailed global coastlines."
     fi
+    unzip land-polygons-split-3857.zip
+    shapeindex land-polygons-split-3857/land_polygons.shp
+
     popd
 }
 
 function import_osm() {
-    local nImports dbopts
+    local nImports dbopts opts checksum oldChecksum
     dbopts=(-U ${DB_ENV_USER} -d ${DB_ENV_SCHEMA} -H db)
+
+    # Generate a checksum to detect whether the files have changed since the
+    # last import.
+    checksum=$(find ${SPOOL_DIR} -maxdepth 1 -type f -exec sha1sum {} \; | sort -k 42 | sha1sum)
+    old_checksum=$(cat ${SPOOL_DIR}/osm_checksum.txt 2>/dev/null)
+    if [ "x${old_checksum}" = "x${checksum}" ]; then
+        echo "OSM planet files have already been imported."
+        return 0
+    fi
+
+    opts=()
     nImports=0
     export PGPASSWORD=${DB_ENV_PASSWORD}
     for f in ${SPOOL_DIR}/*.osm.pbf; do
         echo "Importing $f into database."
         osm2pgsql --slim -C 1500 \
             --number-processes ${NCPU} \
-            ${dbopts[*]} \
+            ${dbopts[*]} ${opts[*]} \
             ${f}
         if [ $? -ne 0 ]; then
             echoerr "Failed to import data."
             exit 1
         fi
+        opts=(--append)
         nImports=$(( $nImports + 1 ))
     done
     if [ $nImports -eq 0 ]; then
@@ -79,6 +90,8 @@ function import_osm() {
     else
         echo "Imported $nImports planet files."
     fi
+
+    echo -n "${checksum}" > ${SPOOL_DIR}/osm_checksum.txt
 }
 
 function generate_style() {
