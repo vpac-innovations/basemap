@@ -69,7 +69,7 @@ function init_database() {
 # http://openstreetmapdata.com/data/land-polygons
 function get_coastlines() {
     mkdir -p ${SPOOL_DIR}/coastlines
-    pushd ${SPOOL_DIR}/coastlines
+    pushd ${SPOOL_DIR}/coastlines >/dev/null
 
     if [ ! -d "simplified-land-polygons-complete-3857" ]; then
         if [ ! -f simplified-land-polygons-complete-3857.zip ]; then
@@ -80,11 +80,15 @@ function get_coastlines() {
                 exit 1
             fi
         fi
-        unzip simplified-land-polygons-complete-3857.zip
+        unzip -o simplified-land-polygons-complete-3857.zip
+    else
+        echo "Using existing simplified coastlines."
     fi
-    shapeindex simplified-land-polygons-complete-3857/simplified_land_polygons.shp
+    if [ ! -f simplified-land-polygons-complete-3857/simplified_land_polygons.index ]; then
+        shapeindex simplified-land-polygons-complete-3857/simplified_land_polygons.shp
+    fi
 
-    if [ ! -d "land-polygons-split-38577" ]; then
+    if [ ! -d "land-polygons-split-3857" ]; then
         if [ ! -f land-polygons-split-3857.zip ]; then
             echo "Getting detailed global coastlines."
             wget http://data.openstreetmapdata.com/land-polygons-split-3857.zip
@@ -93,11 +97,15 @@ function get_coastlines() {
                 exit 1
             fi
         fi
-        unzip land-polygons-split-3857.zip
+        unzip -o land-polygons-split-3857.zip
+    else
+        echo "Using existing detailed coastlines."
     fi
-    shapeindex land-polygons-split-3857/land_polygons.shp
+    if [ ! -f land-polygons-split-3857/land_polygons.index ]; then
+        shapeindex land-polygons-split-3857/land_polygons.shp
+    fi
 
-    popd
+    popd >/dev/null
 }
 
 function import_osm() {

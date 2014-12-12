@@ -24,6 +24,10 @@ RUN apt-get update && \
         unzip \
         wget \
         --no-install-recommends
+RUN apt-get install -y \
+        git \
+        --no-install-recommends && \
+        rm -rf /var/lib/apt/lists/*
 
 RUN ln -s /usr/share/tilemill/index.js /usr/local/bin/tilemill
 
