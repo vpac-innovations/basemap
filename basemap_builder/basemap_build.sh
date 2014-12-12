@@ -114,14 +114,14 @@ function import_osm() {
 
     # Generate a checksum to detect whether the files have changed since the
     # last import.
-    checksum=$(find ${SPOOL_DIR} -maxdepth 1 -type f -exec sha1sum {} \; | sort -k 42 | sha1sum | sed 's,\s\+-$,,')
+    checksum=$(find ${SPOOL_DIR} -maxdepth 1 -type f -name '*.osm.pbf' -exec sha1sum {} \; | sort -k 42 | sha1sum | sed 's,\s\+-$,,')
     old_checksum=$(get_meta checksum)
     if [ "x${old_checksum}" = "x${checksum}" ]; then
         echo "OSM planet files have already been imported."
         return 0
     fi
 
-    opts=()
+    opts=(--create)
     nImports=0
     export PGPASSWORD=${DB_ENV_PASSWORD}
     for f in ${SPOOL_DIR}/*.osm.pbf; do
