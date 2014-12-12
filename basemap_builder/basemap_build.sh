@@ -71,18 +71,30 @@ function get_coastlines() {
     mkdir -p ${SPOOL_DIR}/coastlines
     pushd ${SPOOL_DIR}/coastlines
 
-    if [ ! -f "simplified-land-polygons-complete-3857.zip" ]; then
-        echo "Getting simplified global coastlines."
-        wget http://data.openstreetmapdata.com/simplified-land-polygons-complete-3857.zip
+    if [ ! -d "simplified-land-polygons-complete-3857" ]; then
+        if [ ! -f simplified-land-polygons-complete-3857.zip ]; then
+            echo "Getting simplified global coastlines."
+            wget http://data.openstreetmapdata.com/simplified-land-polygons-complete-3857.zip
+            if [ $? -ne 0 ]; then
+                echoerr "Failed to download global coastlines."
+                exit 1
+            fi
+        fi
+        unzip simplified-land-polygons-complete-3857.zip
     fi
-    unzip simplified-land-polygons-complete-3857.zip
     shapeindex simplified-land-polygons-complete-3857/simplified_land_polygons.shp
 
-    if [ ! -f "land-polygons-split-38577.zip" ]; then
-        echo "Getting detailed global coastlines."
-        wget http://data.openstreetmapdata.com/land-polygons-split-3857.zip
+    if [ ! -d "land-polygons-split-38577" ]; then
+        if [ ! -f land-polygons-split-3857.zip ]; then
+            echo "Getting detailed global coastlines."
+            wget http://data.openstreetmapdata.com/land-polygons-split-3857.zip
+            if [ $? -ne 0 ]; then
+                echoerr "Failed to download global coastlines."
+                exit 1
+            fi
+        fi
+        unzip land-polygons-split-3857.zip
     fi
-    unzip land-polygons-split-3857.zip
     shapeindex land-polygons-split-3857/land_polygons.shp
 
     popd

@@ -19,9 +19,10 @@ RUN apt-get update && \
         mapnik-utils \
         nodejs \
         osm2pgsql \
+        postgresql-client \
         tilemill \
         unzip \
-        postgresql-client \
+        wget \
         --no-install-recommends
 
 RUN ln -s /usr/share/tilemill/index.js /usr/local/bin/tilemill
