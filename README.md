@@ -11,13 +11,13 @@ sudo docker build -t basemap_server basemap_server
 Download a planet file to the spool directory. All `.osm.pbf` files in the spool
 directory will be imported, and any old data will be deleted (if the planet
 files have changed since the last run). In this example, the planet file for
-Australia is used.
+Australia is used - but [other countries are available][gf] too.
 
 ```bash
 mkdir -p data/spool
 mkdir -p data/tiles
 pushd data/spool && \
-    wget http://download.geofabrik.de/australia-oceania/australia-latest.osm.bz2 && \
+    wget http://download.geofabrik.de/australia-oceania/australia-latest.osm.pbf && \
     popd
 ```
 
@@ -52,4 +52,6 @@ sudo docker run --rm -d --name basemap_server \
     -v $PWD/data/tiles:/var/lib/basemap \
     -t basemap_server
 ```
+
+[gf]: http://download.geofabrik.de
 

@@ -41,7 +41,9 @@ function get_meta() {
     dbopts=(-U ${DB_ENV_USER} -d ${DB_ENV_SCHEMA} -h db)
     name=${1}
     export PGPASSWORD=${DB_ENV_PASSWORD}
-    psql ${dbopts[*]} -t --command="SELECT value FROM basemap_meta WHERE name='${name}';" 2>/dev/null | head -n 1 | sed 's, ,,'
+    psql ${dbopts[*]} -t \
+        --command="SELECT value FROM basemap_meta WHERE name='${name}';" \
+        2>/dev/null | head -n 1 | sed 's, ,,'
     return $?
 }
 
@@ -150,10 +152,12 @@ function import_osm() {
 function generate_style() {
     echo "Generating stylesheet."
     pushd ${SPOOL_DIR} >/dev/null
+
     if [ ! -d osm-bright ]; then
         git clone https://github.com/mapbox/osm-bright.git
     fi
     cd osm-bright
+
     cat > configure.py <<EOL
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
@@ -163,7 +167,7 @@ from collections import defaultdict
 config = defaultdict(defaultdict)
 config["importer"] = "osm2pgsql"
 config["name"] = "OSM Bright"
-config["path"] = path.expanduser("~/Documents/MapBox/project")
+config["path"] = path.expanduser("${SPOOL_DIR}/MapBox")
 config["postgis"]["host"]     = "db"
 config["postgis"]["port"]     = "${DB_PORT_5432_TCP_PORT}"
 config["postgis"]["dbname"]   = "${DB_ENV_SCHEMA}"
@@ -174,6 +178,9 @@ config["postgis"]["extent"] = ""
 config["land-high"] = "${SPOOL_DIR}/coastlines/land-polygons-split-3857/land_polygons.shp"
 config["land-low"] = "${SPOOL_DIR}/coastlines/simplified-land-polygons-complete-3857/simplified_land_polygons.shp"
 EOL
+
+    ./make.py
+
     popd >/dev/null
 }
 
