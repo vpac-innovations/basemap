@@ -66,48 +66,50 @@ function init_database() {
     fi
 }
 
-# Get coastlines. These are separate from the osm database that would be
-# downloaded by the user, but it is derived from OSM data periodically. See
-# http://openstreetmapdata.com/data/land-polygons
-function get_coastlines() {
-    mkdir -p ${SPOOL_DIR}/coastlines
-    pushd ${SPOOL_DIR}/coastlines >/dev/null
+function get_extra() {
+    local base url
+    mkdir -p ${SPOOL_DIR}/extras
+    pushd ${SPOOL_DIR}/extras >/dev/null
 
-    if [ ! -d "simplified-land-polygons-complete-3857" ]; then
-        if [ ! -f simplified-land-polygons-complete-3857.zip ]; then
-            echo "Getting simplified global coastlines."
-            wget http://data.openstreetmapdata.com/simplified-land-polygons-complete-3857.zip
+    base=${1}
+    url=${2}
+    is_zip_bomb=${3}
+
+    if [ ! -d ${base} ]; then
+        if [ ! -f ${base}.zip ]; then
+            wget ${url}
             if [ $? -ne 0 ]; then
-                echoerr "Failed to download global coastlines."
+                echoerr "Failed to fetch extra data file."
                 exit 1
             fi
         fi
-        unzip -o simplified-land-polygons-complete-3857.zip
-    else
-        echo "Using existing simplified coastlines."
-    fi
-    if [ ! -f simplified-land-polygons-complete-3857/simplified_land_polygons.index ]; then
-        shapeindex simplified-land-polygons-complete-3857/simplified_land_polygons.shp
-    fi
-
-    if [ ! -d "land-polygons-split-3857" ]; then
-        if [ ! -f land-polygons-split-3857.zip ]; then
-            echo "Getting detailed global coastlines."
-            wget http://data.openstreetmapdata.com/land-polygons-split-3857.zip
-            if [ $? -ne 0 ]; then
-                echoerr "Failed to download global coastlines."
-                exit 1
-            fi
+        if [ x${is_zip_bomb} = x'true' ]; then
+            mkdir -p ${base}
+            pushd ${base} >/dev/null
+            unzip -o ../${base}.zip
+            popd >/dev/null
+        else
+            unzip -o ${base}.zip
         fi
-        unzip -o land-polygons-split-3857.zip
-    else
-        echo "Using existing detailed coastlines."
     fi
-    if [ ! -f land-polygons-split-3857/land_polygons.index ]; then
-        shapeindex land-polygons-split-3857/land_polygons.shp
+    if [ ! -f ${base}/*.index ]; then
+        shapeindex ${base}/*.shp
     fi
 
     popd >/dev/null
+}
+
+# Get coastlines etc. These are separate from the osm database that would be
+# downloaded by the user, but it is derived from OSM data periodically. See
+# http://openstreetmapdata.com/data/land-polygons
+function get_extras() {
+    get_extra "simplified-land-polygons-complete-3857" \
+        http://data.openstreetmapdata.com/simplified-land-polygons-complete-3857.zip
+    get_extra "land-polygons-split-3857" \
+        http://data.openstreetmapdata.com/land-polygons-split-3857.zip
+    get_extra "10m-populated-places-simple" \
+        http://mapbox-geodata.s3.amazonaws.com/natural-earth-1.4.0/cultural/10m-populated-places-simple.zip \
+        true
 }
 
 function import_osm() {
@@ -158,28 +160,20 @@ function generate_style() {
     fi
     cd osm-bright
 
-    cat > configure.py <<EOL
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from os import path, getcwd
-from collections import defaultdict
-config = defaultdict(defaultdict)
-config["importer"] = "osm2pgsql"
-config["name"] = "OSM Bright"
-config["path"] = path.expanduser("${SPOOL_DIR}/MapBox")
-config["postgis"]["host"]     = "db"
-config["postgis"]["port"]     = "${DB_PORT_5432_TCP_PORT}"
-config["postgis"]["dbname"]   = "${DB_ENV_SCHEMA}"
-config["postgis"]["user"]     = "${DB_ENV_USER}"
-config["postgis"]["password"] = "${DB_ENV_PASSWORD}"
-# Extents will be overridden when exporting anyway.
-config["postgis"]["extent"] = ""
-config["land-high"] = "${SPOOL_DIR}/coastlines/land-polygons-split-3857/land_polygons.shp"
-config["land-low"] = "${SPOOL_DIR}/coastlines/simplified-land-polygons-complete-3857/simplified_land_polygons.shp"
-EOL
-
-    ./make.py
+    export PGPASSWORD=${DB_ENV_PASSWORD}
+    patch_mml.py \
+        -d ${DB_ENV_SCHEMA} \
+        -H db \
+        -p ${DB_PORT_5432_TCP_PORT} \
+        -U ${DB_ENV_USER} \
+        -f simplified-land-polygons-complete-3857.zip \
+            ${SPOOL_DIR}/extras/simplified-land-polygons-complete-3857/simplified-land-polygons.shp \
+        -f land-polygons-split-3857.zip \
+            ${SPOOL_DIR}/extras/land-polygons-split-3857/land-polygons.shp \
+        -f 10m-populated-places-simple.zip \
+            ${SPOOL_DIR}/extras/10m-populated-places-simple/10m-populated-places-simple.shp \
+        osm-bright/osm-bright.osm2pgsql.mml \
+        ${SPOOL_DIR}/osm-bright-basemap.xml
 
     popd >/dev/null
 }
@@ -194,6 +188,6 @@ function serve_tiles() {
 
 init_database
 import_osm
-get_coastlines
+get_extras
 generate_style
 

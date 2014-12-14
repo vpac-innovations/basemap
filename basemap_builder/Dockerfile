@@ -26,6 +26,7 @@ RUN apt-get update && \
         --no-install-recommends
 RUN apt-get install -y \
         git \
+        python \
         --no-install-recommends && \
         rm -rf /var/lib/apt/lists/*
 
@@ -38,6 +39,7 @@ ENV STORAGE_DIR /var/lib/basemap
 VOLUME ["/var/lib/basemap", "/var/spool/basemap"]
 
 COPY basemap_build.sh /usr/local/bin/
+COPY patch_mml.py /usr/local/bin/
 
 CMD basemap_build.sh
 
