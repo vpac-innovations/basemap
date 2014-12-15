@@ -184,8 +184,8 @@ function generate_style() {
     fi
 
     # Convert to Mapnik XML.
-    mkdir -p ${SPOOL_DIR}/style
-    carto osm-bright/osm-bright-basemap.mml > ${SPOOL_DIR}/style/basemap.xml
+    mkdir -p ${STORAGE_DIR}/style
+    carto osm-bright/osm-bright-basemap.mml > ${STORAGE_DIR}/style/basemap.xml
 
     if [ $? -ne 0 ]; then
         echoerr "Failed to generate Mapnik style."
@@ -193,19 +193,11 @@ function generate_style() {
     fi
 
     find osm-bright -mindepth 1 -maxdepth 1 -type d -exec \
-        cp -r {} ${SPOOL_DIR}/style/ ';'
+        cp -r {} ${STORAGE_DIR}/style/ ';'
 
-    echo "Style written to SPOOL_DIR/style/basemap.xml"
+    echo "Style written to \$STORAGE_DIR/style/basemap.xml"
 
     popd >/dev/null
-}
-
-function generate_tiles() {
-    echo "Generating tile set."
-}
-
-function serve_tiles() {
-    echo "Serving tiles."
 }
 
 init_database
