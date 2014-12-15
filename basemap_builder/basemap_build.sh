@@ -167,9 +167,9 @@ function generate_style() {
         -p ${DB_PORT_5432_TCP_PORT} \
         -U ${DB_ENV_USER} \
         -f simplified-land-polygons-complete-3857.zip \
-            ${SPOOL_DIR}/extras/simplified-land-polygons-complete-3857/simplified-land-polygons.shp \
+            ${SPOOL_DIR}/extras/simplified-land-polygons-complete-3857/simplified_land_polygons.shp \
         -f land-polygons-split-3857.zip \
-            ${SPOOL_DIR}/extras/land-polygons-split-3857/land-polygons.shp \
+            ${SPOOL_DIR}/extras/land-polygons-split-3857/land_polygons.shp \
         -f 10m-populated-places-simple.zip \
             ${SPOOL_DIR}/extras/10m-populated-places-simple/10m-populated-places-simple.shp \
         osm-bright/osm-bright.osm2pgsql.mml \
@@ -188,7 +188,8 @@ function generate_style() {
         exit 1
     fi
 
-    find osm-bright -maxdepth 1 -type d -exec cp -r {} ${SPOOL_DIR}/style/ ';'
+    find osm-bright -mindepth 1 -maxdepth 1 -type d -exec \
+        cp -r {} ${SPOOL_DIR}/style/ ';'
 
     echo "Style written to SPOOL_DIR/style/basemap.xml"
 
