@@ -173,7 +173,24 @@ function generate_style() {
         -f 10m-populated-places-simple.zip \
             ${SPOOL_DIR}/extras/10m-populated-places-simple/10m-populated-places-simple.shp \
         osm-bright/osm-bright.osm2pgsql.mml \
-        ${SPOOL_DIR}/osm-bright-basemap.xml
+        osm-bright/osm-bright-basemap.mml
+
+    if [ $? -ne 0 ]; then
+        echoerr "Failed to patch OSM Bright model file."
+        exit 1
+    fi
+
+    mkdir -p ${SPOOL_DIR}/style
+    carto osm-bright/osm-bright-basemap.mml > ${SPOOL_DIR}/style/basemap.xml
+
+    if [ $? -ne 0 ]; then
+        echoerr "Failed to generate Mapnik style."
+        exit 1
+    fi
+
+    find osm-bright -maxdepth 1 -type d -exec cp -r {} ${SPOOL_DIR}/style/ ';'
+
+    echo "Style written to SPOOL_DIR/style/basemap.xml"
 
     popd >/dev/null
 }

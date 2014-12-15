@@ -29,6 +29,7 @@ RUN apt-get install -y \
         python \
         --no-install-recommends && \
         rm -rf /var/lib/apt/lists/*
+RUN npm install -g carto
 
 RUN ln -s /usr/share/tilemill/index.js /usr/local/bin/tilemill
 
