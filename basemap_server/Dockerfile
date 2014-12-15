@@ -19,10 +19,11 @@ RUN apt-get update && \
 
 RUN apt-get update && \
     apt-get install -y \
-        build-essential \
         python \
         python-mapnik \
+        python-pil \
         python-pip \
+        python-yaml \
         --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
