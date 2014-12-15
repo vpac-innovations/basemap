@@ -33,7 +33,10 @@ ENV NCPU 0
 ENV SPOOL_DIR /var/spool/basemap
 ENV STORAGE_DIR /var/lib/basemap
 
+EXPOSE 8080
 VOLUME ["/var/lib/basemap", "/var/spool/basemap"]
 
-CMD /bin/bash
+COPY basemap.yaml /usr/share/basemap/
+
+CMD exec mapproxy-util serve-develop /usr/share/basemap/basemap.yaml
 

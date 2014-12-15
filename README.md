@@ -49,6 +49,8 @@ container.
 
 ```bash
 sudo docker run --rm -d --name basemap_server \
+    -p localhost:8080:8080
+    -v $PWD/data/spool:/var/spool/basemap \
     -v $PWD/data/tiles:/var/lib/basemap \
     -t basemap_server
 ```

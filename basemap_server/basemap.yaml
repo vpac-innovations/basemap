@@ -1,0 +1,30 @@
+services:
+  tms:
+    use_grid_names: true
+    # origin for /tiles service
+    origin: 'nw'
+
+layers:
+  - name: osm
+    title: OpenStreetMap
+    sources: [osm_cache]
+
+caches:
+  osm_cache:
+    grids: [webmercator]
+    sources: [osm_local]
+    cache:
+      type: file
+      directory: /var/lib/basemap/osm_local/
+
+sources:
+  osm_local:
+    type: mapnik
+    mapfile: /var/spool/basemap/style/basemap.xml
+
+grids:
+    webmercator:
+        base: GLOBAL_WEBMERCATOR
+
+globals:
+

@@ -49,5 +49,5 @@ RUN mkdir -p ${SPOOL_DIR}/cache && \
 COPY basemap_build.sh /usr/local/bin/
 COPY patch_mml.py /usr/local/bin/
 
-CMD basemap_build.sh
+CMD exec basemap_build.sh
 
