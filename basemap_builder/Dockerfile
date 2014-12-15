@@ -31,15 +31,19 @@ RUN apt-get install -y \
         python-mapnik \
         --no-install-recommends && \
         rm -rf /var/lib/apt/lists/*
-RUN npm install -g carto
-
-RUN ln -s /usr/share/tilemill/index.js /usr/local/bin/tilemill
+RUN npm install -g carto && \
+    npm install -g millstone
 
 ENV NCPU 0
 ENV SPOOL_DIR /var/spool/basemap
 ENV STORAGE_DIR /var/lib/basemap
 
 VOLUME ["/var/lib/basemap", "/var/spool/basemap"]
+
+# Keep Millstone cache in the volume so it can be reused. It's not configurable
+# in Millstone itself yet.
+RUN mkdir -p ${SPOOL_DIR}/cache && \
+    ln -s ${SPOOL_DIR}/cache /tmp/millstone-test
 
 COPY basemap_build.sh /usr/local/bin/
 COPY patch_mml.py /usr/local/bin/

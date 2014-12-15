@@ -36,7 +36,7 @@ sudo docker run --rm --link postgis:db \
 When the process has completed, you should have a set of tiles in the
 `data/tiles` directory. These can be served by `basemap_server` (see below).
 
-The spool directory will be used to store other OSM data which will be
+The `spool/cache` directory will be used to store other data which will be
 downloaded automatically by the script. They should be downloaded around the
 same time as the planet file so that the coastlines match the other data. The
 files are quite large, so you might like to keep them for a while - but delete

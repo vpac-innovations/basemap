@@ -29,37 +29,6 @@ def patch_postgis(mml, dbname=None, password=None, user=None, host=None):
             ds['host'] = host
 
 
-def patch_url(mml, replacement_files):
-    for layer in mml['Layer']:
-        ds = layer['Datasource']
-        path = ds.get('file', '')
-        if not path.startswith('http'):
-            continue
-
-        for remote, local in replacement_files:
-            if remote in path:
-                ds['file'] = os.path.abspath(local)
-                break
-
-
-def guess_ds_types(mml):
-    for layer in mml['Layer']:
-        ds = layer['Datasource']
-
-        if 'file' in ds and ds.get('type') != 'shape':
-            print "Changing layer '%s' from '%s' to '%s'" % (
-                layer.get('name'), ds.get('type'), 'shape')
-            ds['type'] = 'shape'
-            if 'dbname' in ds:
-                print "Removing dbname because this data source is a file."
-                del ds['dbname']
-
-        elif 'dbname' in ds and ds.get('type') != 'postgis':
-            print "Changing layer '%s' from '%s' to '%s'" % (
-                layer.get('name'), ds.get('type'), 'postgis')
-            ds['type'] = 'postgis'
-
-
 class HelpOnErrorArgumentParser(argparse.ArgumentParser):
     def error(self, message):
         sys.stderr.write('error: %s\n' % message)
@@ -78,8 +47,6 @@ def run():
     parser.add_argument("-U", "--username", help="DB user name")
     parser.add_argument("-H", "--host", help="Database host")
     parser.add_argument("-p", "--port", help="Database port")
-    parser.add_argument("-f", "--replace-file", help="Files to patch URLs with",
-        action="append", nargs=2)
 
     args = parser.parse_args()
     password = os.getenv('PGPASSWORD')
@@ -88,9 +55,6 @@ def run():
         mml = json.load(infile)
 
     patch_postgis(mml, args.dbname, password, args.username, args.host)
-    if args.replace_file is not None:
-        patch_url(mml, args.replace_file)
-    guess_ds_types(mml)
 
     with open(args.output, 'w') as outfile:
         json.dump(mml, outfile, indent=2)

@@ -29,6 +29,16 @@ def run():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("style", help="Mapnik stylesheet")
     parser.add_argument("output", help="Output image")
+    parser.add_argument("--t_srs", help="Target spatial reference system")
+    parser.add_argument(
+        "--extents", nargs=4,
+        help="Export extents in target SRS. One corner will be adjusted to " +
+            "be a whole number of tiles from the other.")
+    parser.add_argument(
+        "--size", help="The width and height of the tiles, in pixels.",
+        default=256)
+    parser.add_argument("--nproc", help="Number of concurrent tasks to run.",
+        default=1)
 
     args = parser.parse_args()
 

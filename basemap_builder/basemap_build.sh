@@ -160,19 +160,22 @@ function generate_style() {
     fi
     cd osm-bright
 
+    # Download dependencies.
+    millstone osm-bright/osm-bright.osm2pgsql.mml > osm-bright/osm-bright-resolved.mml
+
+    if [ $? -ne 0 ]; then
+        echoerr "Failed to fetch accompanying data."
+        exit 1
+    fi
+
+    # Insert database connection settings.
     export PGPASSWORD=${DB_ENV_PASSWORD}
     patch_mml.py \
         -d ${DB_ENV_SCHEMA} \
         -H db \
         -p ${DB_PORT_5432_TCP_PORT} \
         -U ${DB_ENV_USER} \
-        -f simplified-land-polygons-complete-3857.zip \
-            ${SPOOL_DIR}/extras/simplified-land-polygons-complete-3857/simplified_land_polygons.shp \
-        -f land-polygons-split-3857.zip \
-            ${SPOOL_DIR}/extras/land-polygons-split-3857/land_polygons.shp \
-        -f 10m-populated-places-simple.zip \
-            ${SPOOL_DIR}/extras/10m-populated-places-simple/10m-populated-places-simple.shp \
-        osm-bright/osm-bright.osm2pgsql.mml \
+        osm-bright/osm-bright-resolved.mml \
         osm-bright/osm-bright-basemap.mml
 
     if [ $? -ne 0 ]; then
@@ -180,6 +183,7 @@ function generate_style() {
         exit 1
     fi
 
+    # Convert to Mapnik XML.
     mkdir -p ${SPOOL_DIR}/style
     carto osm-bright/osm-bright-basemap.mml > ${SPOOL_DIR}/style/basemap.xml
 
