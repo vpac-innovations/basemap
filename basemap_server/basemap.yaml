@@ -1,4 +1,5 @@
 services:
+  demo:
   tms:
     use_grid_names: true
     # origin for /tiles service
@@ -11,7 +12,7 @@ layers:
 
 caches:
   osm_cache:
-    grids: [webmercator]
+    grids: [vicgrid94]
     sources: [osm_local]
     cache:
       type: file
@@ -23,8 +24,14 @@ sources:
     mapfile: /var/spool/basemap/style/basemap.xml
 
 grids:
-    webmercator:
-        base: GLOBAL_WEBMERCATOR
+    vicgrid94:
+        srs: EPSG:3111
+        bbox: [1786000, 1997264.4991957, 3200000, 3100000]
+        res: [2116.670900008467, 1058.3354500042335, 529.1677250021168,
+              264.5838625010584, 132.2919312505292, 66.1459656252646,
+              26.458386250105836, 13.229193125052918, 6.614596562526459,
+              2.6458386250105836, 1.3229193125052918, 0.6614596562526459,
+              0.33072982812632296, 0.21166709000084669]
 
 globals:
 
