@@ -2,8 +2,8 @@
 ## Building
 
 ```bash
-sudo docker build -t basemap_builder basemap_builder
-sudo docker build -t basemap_server basemap_server
+sudo docker build -t vpac/basemap_builder basemap_builder
+sudo docker build -t vpac/basemap_server basemap_server
 ```
 
 ## Building a Base Map
@@ -30,7 +30,7 @@ sudo docker run --rm --link postgis:db \
     -e NCPU=8 \
     -v $PWD/data/spool:/var/spool/basemap \
     -v $PWD/data/tiles:/var/lib/basemap \
-    -t basemap_builder
+    -t vpac/basemap_builder
 ```
 
 When the process has completed, you should have a set of tiles in the
@@ -52,7 +52,7 @@ sudo docker run --rm -d --name basemap_server \
     -p localhost:8080:8080
     -v $PWD/data/spool:/var/spool/basemap \
     -v $PWD/data/tiles:/var/lib/basemap \
-    -t basemap_server
+    -t vpac/basemap_server
 ```
 
 [gf]: http://download.geofabrik.de
