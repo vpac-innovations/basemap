@@ -41,5 +41,5 @@ RUN ln -s ${SPOOL_DIR}/cache /tmp/millstone-test
 
 COPY basemap.yaml /usr/share/basemap/
 
-CMD exec mapproxy-util serve-develop -b 0.0.0.0:8080 /usr/share/basemap/basemap.yaml
+CMD ["mapproxy-util", "serve-develop", "-b", "0.0.0.0:8080", "/usr/share/basemap/basemap.yaml"]
 
