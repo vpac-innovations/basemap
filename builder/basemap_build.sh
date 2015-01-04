@@ -66,52 +66,6 @@ function init_database() {
     fi
 }
 
-function get_extra() {
-    local base url
-    mkdir -p ${SPOOL_DIR}/extras
-    pushd ${SPOOL_DIR}/extras >/dev/null
-
-    base=${1}
-    url=${2}
-    is_zip_bomb=${3}
-
-    if [ ! -d ${base} ]; then
-        if [ ! -f ${base}.zip ]; then
-            wget ${url}
-            if [ $? -ne 0 ]; then
-                echoerr "Failed to fetch extra data file."
-                exit 1
-            fi
-        fi
-        if [ x${is_zip_bomb} = x'true' ]; then
-            mkdir -p ${base}
-            pushd ${base} >/dev/null
-            unzip -o ../${base}.zip
-            popd >/dev/null
-        else
-            unzip -o ${base}.zip
-        fi
-    fi
-    if [ ! -f ${base}/*.index ]; then
-        shapeindex ${base}/*.shp
-    fi
-
-    popd >/dev/null
-}
-
-# Get coastlines etc. These are separate from the osm database that would be
-# downloaded by the user, but it is derived from OSM data periodically. See
-# http://openstreetmapdata.com/data/land-polygons
-function get_extras() {
-    get_extra "simplified-land-polygons-complete-3857" \
-        http://data.openstreetmapdata.com/simplified-land-polygons-complete-3857.zip
-    get_extra "land-polygons-split-3857" \
-        http://data.openstreetmapdata.com/land-polygons-split-3857.zip
-    get_extra "10m-populated-places-simple" \
-        http://mapbox-geodata.s3.amazonaws.com/natural-earth-1.4.0/cultural/10m-populated-places-simple.zip \
-        true
-}
-
 function import_osm() {
     local nImports dbopts opts checksum oldChecksum
     dbopts=(-U ${DB_ENV_USER} -d ${DB_ENV_SCHEMA} -H db)
@@ -195,13 +149,12 @@ function generate_style() {
     find osm-bright -mindepth 1 -maxdepth 1 -type d -exec \
         cp -r {} ${STORAGE_DIR}/style/ ';'
 
-    echo "Style written to \$STORAGE_DIR/style/basemap.xml"
+    echo "Style written to \${STORAGE_DIR}/style/basemap.xml"
 
     popd >/dev/null
 }
 
 init_database
 import_osm
-get_extras
 generate_style
 

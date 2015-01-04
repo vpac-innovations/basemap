@@ -29,6 +29,7 @@ RUN apt-get update && \
         postgresql-client \
         python \
         python-mapnik \
+        wget \
         --no-install-recommends &&\
     rm -rf /var/lib/apt/lists/*
 
