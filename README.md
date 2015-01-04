@@ -2,41 +2,52 @@
 ## Building
 
 ```bash
-sudo docker build -t vpac/basemap_builder basemap_builder
-sudo docker build -t vpac/basemap_server basemap_server
+sudo docker build -t vpac/basemap_data data
+sudo docker build -t vpac/basemap_builder builder
+sudo docker build -t vpac/basemap_server server
 ```
+
+## Storage
+
+The first time you build a base map, you need to initialise the storage volumes.
+
+```bash
+sudo docker run --name basemap_data vpac/basemap_data
+```
+
+The container will stop immediately, but don't remove it, or the data collected
+in the following steps will be lost. You can see the data by mounting it in
+another container, e.g.
+
+```bash
+sudo docker run --rm --volumes-from basemap_data ubuntu ls /var/spool/basemap
+```
+
 
 ## Building a Base Map
 
-Download a planet file to the spool directory. All `.osm.pbf` files in the spool
-directory will be imported, and any old data will be deleted (if the planet
-files have changed since the last run). In this example, the planet file for
-Australia is used - but [other countries are available][gf] too.
+Download a planet file to the data container's spool directory. All `.osm.pbf`
+files in this directory will be imported, and any old data will be deleted (if
+the planet files have changed since the last run). In this example, the planet
+file for Australia is used - but [other countries are available][gf] too.
 
 ```bash
-mkdir -p data/spool
-mkdir -p data/tiles
-pushd data/spool && \
-    wget http://download.geofabrik.de/australia-oceania/australia-latest.osm.pbf && \
-    popd
+sudo docker run --rm --volumes-from basemap_data ubuntu bash -c "
+    apt-get install -y wget &&
+    wget -P /var/spool/basemap http://download.geofabrik.de/australia-oceania/australia-latest.osm.pbf"
 ```
 
 Then run the builder in the context of a PostGIS server.
 
 ```bash
-sudo docker pull jamesbrink/postgresql
 sudo docker run -d --name postgis jamesbrink/postgresql
 sudo docker run --rm --link postgis:db \
     -e NCPU=8 \
-    -v $PWD/data/spool:/var/spool/basemap \
-    -v $PWD/data/tiles:/var/lib/basemap \
+    --volumes-from basemap_data \
     -t vpac/basemap_builder
 ```
 
-When the process has completed, you should have a set of tiles in the
-`data/tiles` directory. These can be served by `basemap_server` (see below).
-
-The `spool/cache` directory will be used to store other data which will be
+The data container will be used to store other datasets which will be
 downloaded automatically by the script. They should be downloaded around the
 same time as the planet file so that the coastlines match the other data. The
 files are quite large, so you might like to keep them for a while - but delete
@@ -49,9 +60,8 @@ container.
 
 ```bash
 sudo docker run --rm -d --name basemap_server \
-    -p localhost:8080:8080
-    -v $PWD/data/spool:/var/spool/basemap \
-    -v $PWD/data/tiles:/var/lib/basemap \
+    -p 8080:8080 \
+    --volumes-from basemap_data \
     -t vpac/basemap_server
 ```
 
