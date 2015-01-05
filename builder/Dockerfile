@@ -42,11 +42,6 @@ ENV STORAGE_DIR /var/lib/basemap
 
 VOLUME ["/var/lib/basemap", "/var/spool/basemap"]
 
-# Keep Millstone cache in the volume so it can be reused. It's not configurable
-# in Millstone itself yet.
-RUN mkdir -p ${SPOOL_DIR}/cache && \
-    ln -s ${SPOOL_DIR}/cache /tmp/millstone-test
-
 COPY basemap_build.sh /usr/local/bin/
 COPY patch_mml.py /usr/local/bin/
 

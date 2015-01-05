@@ -41,10 +41,11 @@ Then run the builder in the context of a PostGIS server.
 
 ```bash
 sudo docker run -d --name postgis jamesbrink/postgresql
-sudo docker run --rm --link postgis:db \
+sudo docker run --rm \
+    --link postgis:db \
     -e NCPU=8 \
     --volumes-from basemap_data \
-    -t vpac/basemap_builder
+    vpac/basemap_builder
 ```
 
 The data container will be used to store other datasets which will be
@@ -59,10 +60,11 @@ Once you have some tiles in `data/tiles`, simply start a `basemap_server`
 container.
 
 ```bash
-sudo docker run --rm -d --name basemap_server \
-    -p 8080:8080 \
+sudo docker run -d --name basemap_server \
+    --link postgis:db \
     --volumes-from basemap_data \
-    -t vpac/basemap_server
+    --publish 8080:8080 \
+    vpac/basemap_server
 ```
 
 [gf]: http://download.geofabrik.de

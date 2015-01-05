@@ -115,10 +115,14 @@ function generate_style() {
     cd osm-bright
 
     # Download dependencies.
-    millstone osm-bright/osm-bright.osm2pgsql.mml > osm-bright/osm-bright-resolved.mml
+    # Keep Millstone cache in the volume so it can be reused. It's not
+    # configurable in Millstone itself yet.
+    mkdir -p ${SPOOL_DIR}/cache && \
+        ln -fs ${SPOOL_DIR}/cache /tmp/millstone-test && \
+        millstone osm-bright/osm-bright.osm2pgsql.mml > osm-bright/osm-bright-resolved.mml
 
     if [ $? -ne 0 ]; then
-        echoerr "Failed to fetch accompanying data."
+        echoerr "Failed to fetch supplementary data."
         exit 1
     fi
 
@@ -149,7 +153,7 @@ function generate_style() {
     find osm-bright -mindepth 1 -maxdepth 1 -type d -exec \
         cp -r {} ${STORAGE_DIR}/style/ ';'
 
-    echo "Style written to \${STORAGE_DIR}/style/basemap.xml"
+    echo "Style written to \$STORAGE_DIR/style/basemap.xml"
 
     popd >/dev/null
 }

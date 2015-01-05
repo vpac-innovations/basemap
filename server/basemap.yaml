@@ -21,7 +21,7 @@ caches:
 sources:
   osm_local:
     type: mapnik
-    mapfile: /var/spool/basemap/style/basemap.xml
+    mapfile: /var/lib/basemap/style/basemap.xml
 
 grids:
     vicgrid94:
