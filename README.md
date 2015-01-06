@@ -1,4 +1,6 @@
 
+This is a project for building and serving base maps in arbitrary projections.
+
 ## Building
 
 ```bash
