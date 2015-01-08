@@ -4,6 +4,16 @@ services:
     use_grid_names: true
     # origin for /tiles service
     origin: 'nw'
+  wms:
+    srs: ['EPSG:3111']
+    image_formats: [image/png]
+    md:
+        title: Basemap
+        online_resource: http://www.openstreetmap.org/
+        contact:
+            person: Alex Fraser
+            organisation: VPAC Innovations
+            email: alex@vpac-innovations.com.au
 
 layers:
   - name: osm
