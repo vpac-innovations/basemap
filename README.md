@@ -58,16 +58,17 @@ them if you want the script to download a fresh copy.
 
 ## Serving a Base Map
 
-Once you have some tiles in `data/tiles`, simply start a `basemap_server`
-container.
+Simply start a `basemap_server` container.
 
 ```bash
 sudo docker run -d --name basemap_server \
     --link postgis:db \
     --volumes-from basemap_data \
-    --publish 8080:8080 \
+    --publish 8081:8080 \
     vpac/basemap_server
 ```
 
-[gf]: http://download.geofabrik.de
+Then you should be able to view the maps by navigating to [localhost:8081][demo].
 
+[gf]: http://download.geofabrik.de
+[demo]: http://localhost:8081/demo
