@@ -22,11 +22,8 @@ layers:
 
 caches:
   osm_cache:
-    grids: [vicgrid94]
+    grids: [primary]
     sources: [osm_local]
-    cache:
-      type: file
-      directory: /var/lib/basemap/osm_local/
 
 sources:
   osm_local:
@@ -34,7 +31,8 @@ sources:
     mapfile: /var/lib/basemap/style/basemap.xml
 
 grids:
-    vicgrid94:
+    primary:
+        # Vicgrid, with bounds of Victoria (plus a little bit more)
         srs: EPSG:3111
         bbox: [1786000, 1997264.4991957, 3200000, 3100000]
         res: [2116.670900008467, 1058.3354500042335, 529.1677250021168,
@@ -44,4 +42,5 @@ grids:
               0.33072982812632296, 0.21166709000084669]
 
 globals:
-
+    cache:
+        base_dir: /var/lib/basemap/cache/
