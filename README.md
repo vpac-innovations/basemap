@@ -17,6 +17,9 @@ The first time you build a base map, you need to initialise the storage volumes.
 sudo docker run --name basemap_data vpac/basemap_data
 ```
 
+If you want to control the storage, you can specify volumes. See
+[data/Dockerfile](data/Dockerfile) for details.
+
 The container will stop immediately, but don't remove it, or the data collected
 in the following steps will be lost. You can see the data by mounting it in
 another container, e.g.
@@ -42,9 +45,9 @@ sudo docker run --rm --volumes-from basemap_data ubuntu bash -c "
 Then run the builder in the context of a PostGIS server.
 
 ```bash
-sudo docker run -d --name postgis jamesbrink/postgresql
+sudo docker run -d --name basemap_postgis jamesbrink/postgresql
 sudo docker run --rm \
-    --link postgis:db \
+    --link basemap_postgis:db \
     -e NCPU=8 \
     --volumes-from basemap_data \
     vpac/basemap_builder
