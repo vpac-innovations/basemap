@@ -65,7 +65,7 @@ Simply start a `basemap_server` container.
 
 ```bash
 sudo docker run -d --name basemap_server \
-    --link postgis:db \
+    --link basemap_postgis:db \
     --volumes-from basemap_data \
     --publish 8081:8080 \
     vpac/basemap_server
