@@ -11,8 +11,10 @@ RUN apt-get update && \
         software-properties-common \
         --no-install-recommends && \
     add-apt-repository ppa:developmentseed/mapbox && \
+    add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse" && \
     apt-get update && \
     apt-get install -y \
+        unifont \
         libmapnik \
         mapnik-input-plugin-postgis && \
     rm -rf /var/lib/apt/lists/*

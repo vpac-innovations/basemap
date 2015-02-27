@@ -57,6 +57,9 @@ function init_database() {
        return 0
     fi
 
+    dropdb -U ${DB_ENV_USER} -h db ${DB_ENV_SCHEMA}
+    createdb -O ${DB_ENV_USER} -U ${DB_ENV_USER} -E UTF8 -T "template0" -h db ${DB_ENV_SCHEMA}
+
     echo "Setting up PostGIS functions."
     psql ${dbopts[*]} \
         --command="CREATE EXTENSION postgis; CREATE EXTENSION postgis_topology;"
@@ -64,6 +67,8 @@ function init_database() {
         echoerr "Failed to set up PostGIS."
         exit 1
     fi
+
+
 }
 
 function import_osm() {
