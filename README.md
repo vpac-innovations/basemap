@@ -1,6 +1,16 @@
 
 This is a project for building and serving base maps in arbitrary projections.
 
+## Configuration
+
+Create a config directory:
+
+```bash
+cp -r config ../config
+```
+
+Edit `../config/basemap.yaml` to configure MapProxy for your needs.
+
 ## Building
 
 ```bash
@@ -14,7 +24,7 @@ sudo docker build -t vpac/basemap_server server
 The first time you build a base map, you need to initialise the storage volumes.
 
 ```bash
-sudo docker run --name basemap_data vpac/basemap_data
+sudo docker-compose up data
 ```
 
 If you want to control the storage, you can specify volumes. See
@@ -45,12 +55,7 @@ sudo docker run --rm --volumes-from basemap_data ubuntu bash -c "
 Then run the builder in the context of a PostGIS server.
 
 ```bash
-sudo docker run -d --name basemap_postgis jamesbrink/postgresql
-sudo docker run --rm \
-    --link basemap_postgis:db \
-    -e NCPU=8 \
-    --volumes-from basemap_data \
-    vpac/basemap_builder
+sudo docker-compose run --rm builder
 ```
 
 The data container will be used to store other datasets which will be
@@ -64,11 +69,7 @@ them if you want the script to download a fresh copy.
 Simply start a `basemap_server` container.
 
 ```bash
-sudo docker run -d --name basemap_server \
-    --link basemap_postgis:db \
-    --volumes-from basemap_data \
-    --publish 8081:8080 \
-    vpac/basemap_server
+sudo docker-compose up server
 ```
 
 Then you should be able to view the maps by navigating to [localhost:8081][demo].

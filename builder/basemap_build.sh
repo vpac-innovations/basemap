@@ -47,6 +47,16 @@ function get_meta() {
     return $?
 }
 
+function wait_for_database() {
+    export PGPASSWORD=${DB_ENV_PASSWORD}
+    until psql  -U ${DB_ENV_USER} -d ${DB_ENV_SCHEMA} -h db -c '\l'; do
+      >&2 echo "Waiting for PostGIS to initialize"
+      sleep 5
+    done
+
+    >&2 echo "PostGIS is up - building basemap"
+}
+
 function init_database() {
     local dbopts
     dbopts=(-U ${DB_ENV_USER} -d ${DB_ENV_SCHEMA} -h db)
@@ -163,7 +173,7 @@ function generate_style() {
     popd >/dev/null
 }
 
+wait_for_database
 init_database
 import_osm
 generate_style
-

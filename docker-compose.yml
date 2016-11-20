@@ -1,0 +1,25 @@
+data:
+  build: ./data/
+
+postgis:
+ image: jamesbrink/postgresql
+
+builder:
+  build: ./builder/
+  links:
+   - postgis:db
+  environment:
+   - NCPU=8
+  volumes_from:
+   - data
+
+server:
+  build: ./server/
+  links:
+   - postgis:db
+  volumes_from:
+   - data
+  ports:
+   - "8081:8080"
+  volumes:
+   - ../config:/usr/share/basemap/config

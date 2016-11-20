@@ -33,6 +33,7 @@ RUN apt-get update && \
         --no-install-recommends &&\
     rm -rf /var/lib/apt/lists/*
 
+RUN npm -g config set user "root"
 RUN npm install -g carto && \
     npm install -g millstone
 
@@ -46,4 +47,3 @@ COPY basemap_build.sh /usr/local/bin/
 COPY patch_mml.py /usr/local/bin/
 
 CMD ["basemap_build.sh"]
-

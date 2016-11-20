@@ -41,7 +41,4 @@ VOLUME ["/var/lib/basemap", "/var/spool/basemap"]
 # Link to Millstone cache; it's not configurable in Millstone itself yet.
 RUN ln -s ${SPOOL_DIR}/cache /tmp/millstone-test
 
-COPY basemap.yaml /usr/share/basemap/
-
-CMD ["mapproxy-util", "serve-develop", "-b", "0.0.0.0:8080", "/usr/share/basemap/basemap.yaml"]
-
+CMD ["mapproxy-util", "serve-develop", "-b", "0.0.0.0:8080", "/usr/share/basemap/config/basemap.yaml"]
